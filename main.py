@@ -8,7 +8,7 @@ from payment_adapter import OldPaymentGateway, PaymentGatewayAdapter
 def main():
 
     # -----------------------------------------
-    # 1. Get the Singleton Logger
+    # 1. Singleton Logger
     # -----------------------------------------
 
     logger = Logger.get_instance()
@@ -18,7 +18,7 @@ def main():
     logger.log(f"Starting order {order_id}")
 
     # -----------------------------------------
-    # 2. Create a meal using Factory
+    # 2. Factory - Create Meal
     # -----------------------------------------
 
     meal = MealFactory.create_meal("pizza")
@@ -31,7 +31,7 @@ def main():
     logger.log("Meal created successfully: Pizza")
 
     # -----------------------------------------
-    # 3. Build a combo using Builder
+    # 3. Builder - Build Combo Meal
     # -----------------------------------------
 
     builder = ComboMealBuilder()
@@ -48,22 +48,36 @@ def main():
     logger.log("Combo meal built successfully")
 
     # -----------------------------------------
-    # 4. Assign a delivery partner
+    # 4. Multiton - Delivery Partner Pool
     # -----------------------------------------
 
     pool = DeliveryPartnerPool()
 
-    partner_id = pool.assign_partner(order_id)
+    partner1 = pool.assign_partner("ORD-001")
+    partner2 = pool.assign_partner("ORD-002")
+    partner3 = pool.assign_partner("ORD-003")
 
-    if partner_id is None:
-        print("No delivery partner available.")
-        logger.log("Delivery partner assignment failed.")
-        return
+    # Pool is now full
+    partner4 = pool.assign_partner("ORD-004")
 
-    logger.log(f"Delivery partner assigned: {partner_id}")
+    if partner4 is None:
+        logger.log("Delivery partner pool is full")
+
+    # Release one partner
+    pool.release_partner(partner2)
+    logger.log(f"Delivery partner released: {partner2}")
+
+    # Assign a new partner
+    partner4 = pool.assign_partner("ORD-004")
+    logger.log(f"New delivery partner assigned: {partner4}")
+
+    # Use Partner-1 for our actual order
+    partner_id = partner1
+
+    logger.log(f"Delivery partner assigned to {order_id}: {partner_id}")
 
     # -----------------------------------------
-    # 5. Process payment using Adapter
+    # 5. Adapter - Process Payment
     # -----------------------------------------
 
     old_gateway = OldPaymentGateway()
@@ -78,7 +92,7 @@ def main():
         logger.log("Payment failed")
 
     # -----------------------------------------
-    # 6. Display order receipt
+    # 6. Display Order Receipt
     # -----------------------------------------
 
     print("\n==============================")
@@ -99,7 +113,7 @@ def main():
     print("==============================")
 
     # -----------------------------------------
-    # 7. Display Logger history
+    # 7. Display Logger History
     # -----------------------------------------
 
     print("\n==============================")
